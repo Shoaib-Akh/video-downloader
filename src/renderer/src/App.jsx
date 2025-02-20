@@ -34,7 +34,35 @@ function App() {
   const [isDownloading, setIsDownloading] = useState(false)
   const [permissionStatus, setPermissionStatus] = useState('unknown')
   const [downloadedFile, setDownloadedFile] = useState('')
+  const [formats, setFormats] = useState([])
+  const [fileSize, setFileSize] = useState('')
+  const [speed, setSpeed] = useState('')
+  const [eta, setEta] = useState('')
+  console.log('downloadedFile', downloadProgress)
+  useEffect(() => {
+    const fetchFormats = async () => {
+      try {
+        const availableFormats = await window.api.getFormats()
+        setFormats(availableFormats)
+      } catch (error) {
+        console.error('Error loading formats:', error)
+      }
+    }
+    fetchFormats()
+  }, [])
+  const fetchYoutubeCookies = async () => {
+    if (!window.api?.getYoutubeCookies) {
+      console.error('window.api.getYoutubeCookies is not defined.')
+      return
+    }
 
+    try {
+      const cookies = await window.api.getYoutubeCookies()
+      console.log('YouTube Cookies:', cookies)
+    } catch (error) {
+      console.error('Error fetching YouTube cookies:', error)
+    }
+  }
   const fetchCookies = async () => {
     if (permissionStatus === 'unknown') {
       const userConsent = window.confirm('Do you allow this app to access cookies?')
@@ -43,6 +71,7 @@ function App() {
         alert('Cookie access denied!')
         return
       }
+      fetchYoutubeCookies()
       setPermissionStatus('granted')
     }
 
@@ -64,20 +93,22 @@ function App() {
 
   useEffect(() => {
     if (window.api?.receive) {
-      // ✅ Ensure the function exists before calling
-      window.api.receive('download-progress', ({ progress, filename }) => {
+      window.api.receive('download-progress', ({ progress, fileSize, speed, eta }) => {
         setDownloadProgress(progress)
-        setDownloadedFile(filename)
+        setFileSize(fileSize)
+        setSpeed(speed)
+        setEta(eta)
       })
     } else {
       console.error('window.api.receive is not defined.')
     }
   }, [])
-  console.log('downloadProgress', downloadProgress)
 
-  const handleDownload = async () => {
-    if (!videoUrl.trim()) {
-      alert('Please enter a valid YouTube URL')
+  const handleDownload = async (formatId) => {
+    console.log(formatId)
+
+    if (!videoUrl.trim() || !formatId) {
+      alert('Please enter a valid YouTube URL and select a format')
       return
     }
 
@@ -85,10 +116,13 @@ function App() {
       setDownloadStatus('Downloading...')
       setIsDownloading(true)
       setDownloadProgress(0)
+      setFileSize('')
+      setSpeed('')
+      setEta('')
       setDownloadedFile('')
 
       if (window.api?.downloadVideo) {
-        await window.api.downloadVideo(videoUrl)
+        await window.api.downloadVideo(videoUrl, formatId)
         setDownloadStatus('Download Complete ✅')
       } else {
         throw new Error('API not available')
@@ -112,14 +146,10 @@ function App() {
     }
   }
 
-  // if (permissionStatus !== "granted") {
-  //   return console.log("sddss");
-
-  // }
-
   return (
     <div className="app-container">
       <h2>Electron Video Downloader</h2>
+      <h2>🎬 YouTube Video Downloader</h2>
 
       <div className="input-container">
         <input
@@ -128,14 +158,39 @@ function App() {
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
         />
-        <button onClick={handleDownload} className="download-btn" disabled={isDownloading}>
-          {isDownloading ? 'Downloading...' : 'Download'}
-        </button>
       </div>
+
+      {formats.length > 0 && (
+        <div className="formats-container">
+          <h3>Select a Format:</h3>
+          {formats.map((format) => (
+            <button
+              key={format.formatId}
+              className="format-btn"
+              onClick={() => handleDownload(format.formatId)}
+            >
+              {format.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {isDownloading && (
         <div className="progress-container">
-          <p>Downloading: {downloadedFile || 'Fetching filename...'}</p>
+          <h3>Download Progress:</h3>
+          <p>
+            <strong>File:</strong> {downloadedFile || 'Fetching filename...'}
+          </p>
+          <p>
+            <strong>Size:</strong> {fileSize || 'Calculating...'}
+          </p>
+          <p>
+            <strong>Speed:</strong> {speed || 'Waiting...'}
+          </p>
+          <p>
+            <strong>ETA:</strong> {eta || '...'}
+          </p>
+
           <div className="progress-bar">
             <div className="progress" style={{ width: `${downloadProgress}%` }}></div>
           </div>
@@ -144,7 +199,7 @@ function App() {
       )}
 
       {downloadStatus && (
-        <div className="status-bar">
+        <div className={`status-bar ${downloadProgress === 100 ? 'success' : 'error'}`}>
           <FaDownload className="status-icon" />
           <span>{downloadStatus}</span>
           {downloadProgress === 100 ? (
@@ -155,46 +210,30 @@ function App() {
         </div>
       )}
 
-      {currentUrl && permissionStatus !== 'denied' && (
+      {/* {currentUrl && permissionStatus !== 'denied' && (
         <button onClick={fetchCookies} className="fetch-btn">
           Fetch Cookies
         </button>
-      )}
+      )} */}
 
-      <img
+      {/* <img
         src={electronLogo}
         alt="Electron Logo"
         className="logo"
         onClick={() => setShowIcons(!showIcons)}
-      />
+      /> */}
 
-      {showIcons && (
-        <div className="social-icons">
-          {socialLinks.map((social) => (
-            <div
-              key={social.name}
-              className="social-icon"
-              onClick={() => handleSocialIconClick(social.url)}
-            >
-              {social.icon}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {cookies.length > 0 && (
-        <div className="cookies-container">
-          <h3>Cookies:</h3>
-          <ul>
-            {cookies.map(
-              (cookie) => console.log(' show: false,', cookie)
-              // <li key={index}>
-              //   <strong>{cookie.name}:</strong> {cookie.value}
-              // </li>
-            )}
-          </ul>
-        </div>
-      )}
+      <div className="social-icons">
+        {socialLinks.map((social) => (
+          <div
+            key={social.name}
+            className="social-icon"
+            onClick={() => handleSocialIconClick(social.url)}
+          >
+            {social.icon}
+          </div>
+        ))}
+      </div>
 
       {/* {isDownloading && (
         <div className="status-bar">

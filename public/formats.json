@@ -1,0 +1,6 @@
+[
+    { "formatId": "136", "formatType": "mp4", "quality": "1280x720", "label": "720p MP4" },
+    { "formatId": "137", "formatType": "mp4", "quality": "1920x1080", "label": "1080p MP4" },
+    { "formatId": "140", "formatType": "m4a", "quality": "128kbps", "label": "128kbps Audio" },
+    { "formatId": "251", "formatType": "m4a", "quality": "256kbps", "label": "256kbps Audio" }
+  ]

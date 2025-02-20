@@ -45,6 +45,10 @@
       {
         "from": "public/yt-dlp.exe",
         "to": "yt-dlp.exe"
+      },
+      {
+        "from": "public/cookies.txt",
+        "to": "cookies.txt"
       }
     ]
   }
