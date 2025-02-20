@@ -1,0 +1,163 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  /* App Container */
+  .app-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 500px;
+  }
+  
+  /* Input Container */
+  .input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Buttons */
+  button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .download-btn {
+    background: #007bff;
+    color: white;
+  }
+  
+  .download-btn:hover {
+    background: #0056b3;
+  }
+  
+  .fetch-btn {
+    background: #28a745;
+    color: white;
+  }
+  
+  .fetch-btn:hover {
+    background: #218838;
+  }
+  
+  /* Logo */
+  .logo {
+    cursor: pointer;
+    margin-top: 20px;
+    width: 80px;
+  }
+  
+  /* Social Icons */
+  .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .social-icon {
+    font-size: 30px;
+    cursor: pointer;
+  }
+  
+  .youtube-icon {
+    color: red;
+  }
+  
+  .instagram-icon {
+    color: purple;
+  }
+  
+  .facebook-icon {
+    color: blue;
+  }
+  
+  /* Webview */
+  .webview-container {
+    margin-top: 20px;
+    width: 100%;
+    height: 500px;
+    border: 1px solid #ccc;
+  }
+  
+  /* Cookies Container */
+  .cookies-container {
+    margin-top: 20px;
+    text-align: left;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+    color: #333;
+  }
+  .cookies-container h3 {
+    color: red;
+  }
+  
+  /* Status Bar */
+ 
+  
+ 
+  
+  
+  
+  .status-error {
+    color: #dc3545;
+  }
+  .progress-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 10px;
+    background: red;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  
+  .progress {
+    height: 100%;
+    background: #4caf50;
+    transition: width 0.3s ease-in-out;
+  }
+  
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .status-icon {
+    margin-right: 10px;
+    font-size: 20px;
+  }
+  
+  .status-success {
+    color: green;
+  }
+
+  
