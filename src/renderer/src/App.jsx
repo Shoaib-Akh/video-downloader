@@ -59,13 +59,13 @@ function App() {
         alert('Cookie access denied!')
         return
       }
-      fetchYoutubeCookies()
       setPermissionStatus('granted')
     }
 
     if (permissionStatus === 'granted') {
       try {
-        window.api.getCookies(currentUrl)
+        fetchYoutubeCookies()
+      
       } catch (error) {
         console.error('Error fetching cookies:', error)
         setPermissionStatus('denied')

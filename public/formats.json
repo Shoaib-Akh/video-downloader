@@ -1,6 +1,10 @@
 [
-    { "formatId": "136", "formatType": "mp4", "quality": "1280x720", "label": "720p MP4" },
-    { "formatId": "137", "formatType": "mp4", "quality": "1920x1080", "label": "1080p MP4" },
-    { "formatId": "140", "formatType": "m4a", "quality": "128kbps", "label": "128kbps Audio" },
-    { "formatId": "251", "formatType": "m4a", "quality": "256kbps", "label": "256kbps Audio" }
-  ]
+  { "formatId": "136", "formatType": "mp4", "quality": "1280x720", "label": "720p MP4" },
+  { "formatId": "137", "formatType": "mp4", "quality": "1920x1080", "label": "1080p MP4" },
+  { "formatId": "140", "formatType": "m4a", "quality": "128kbps", "label": "128kbps Audio" },
+  { "formatId": "251", "formatType": "m4a", "quality": "256kbps", "label": "256kbps Audio" },
+  { "formatId": "22", "formatType": "mp4", "quality": "1280x720", "label": "720p MP4 (Most compatible)" },
+  { "formatId": "18", "formatType": "mp4", "quality": "640x360", "label": "360p MP4 (Smaller size)" },
+  { "formatId": "248", "formatType": "webm", "quality": "1920x1080", "label": "1080p WebM (Better quality, no audio)" },
+  { "formatId": "250", "formatType": "webm", "quality": "64kbps", "label": "64kbps WebM Audio" }
+]
