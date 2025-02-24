@@ -3,9 +3,10 @@ const { contextBridge, ipcRenderer } = require('electron')
 // Custom API for renderer process
 const api = {
   openWebview: (url) => ipcRenderer.send('open-webview', url),
-  downloadVideo: (url, formatId) => ipcRenderer.invoke('downloadVideo', url, formatId),
+  downloadVideo: (url, videoFormat,audioFormat) => ipcRenderer.invoke('downloadVideo', url, videoFormat,audioFormat),
   getYoutubeCookies: () => ipcRenderer.invoke('getYoutubeCookies'),
-  getFormats: () => ipcRenderer.invoke('getFormats'),
+  // getFormats: () => ipcRenderer.invoke('getFormats'),
+  getFormats: (url) => ipcRenderer.invoke('getFormats', url),
   videoChanged: (newUrl) => ipcRenderer.send('videoChanged', newUrl),
 
 

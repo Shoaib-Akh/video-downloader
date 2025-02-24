@@ -81,7 +81,6 @@ async function updateCookiesFile() {
   }
 }
 
-
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -139,7 +138,6 @@ app.on('window-all-closed', () => {
 // -------------------------------------
 ipcMain.on('open-webview', (event, url) => {
   let webviewWindow = new BrowserWindow({
-    width: 800,
     height: 600,
     webPreferences: {
       webviewTag: true,
@@ -172,21 +170,28 @@ ipcMain.on('open-webview', (event, url) => {
 // -------------------------------------
 // Download video with yt-dlp
 // -------------------------------------
-ipcMain.handle('downloadVideo', async (event, url, formatId) => {
+ipcMain.handle('downloadVideo', async (event, url, videoFormat, audioFormat) => {
   return new Promise((resolve, reject) => {
     const downloadDir = app.getPath('downloads')
     const downloadPath = join(downloadDir, '%(title)s.%(ext)s')
+console.log(videoFormat);
+console.log(audioFormat);
 
-    let command = `"${ytdlpPath}" -o "${downloadPath}" --cookies "${cookiesPath}" -f ${formatId} "${url}"`
+
+    // Construct the yt-dlp command for downloading video + audio
+    let command = `"${ytdlpPath}" -o "${downloadPath}" --cookies -f "bestaudio[ext=m4a]+bestvideo[ext=mp4]" --merge-output-format mp4 "${url}"`
+    console.log('command', command)
 
     const processHandle = exec(command)
 
     processHandle.stdout.on('data', (data) => {
+      console.log('Download Progress:', data)
+
       const progressMatch = data.match(
         /(\d+\.?\d*)%\s+of\s+([\d.]+[KMG]iB)\s+at\s+([\d.]+[KMG]?iB\/s)\s+ETA\s+([\d:]+)/
       )
       if (progressMatch) {
-        const progress = parseFloat(progressMatch[1]) 
+        const progress = parseFloat(progressMatch[1])
         const fileSize = progressMatch[2]
         const speed = progressMatch[3]
         const eta = progressMatch[4]
@@ -196,7 +201,7 @@ ipcMain.handle('downloadVideo', async (event, url, formatId) => {
     })
 
     processHandle.stderr.on('data', (data) => {
-      console.error('Download Error:', data)
+      console.log('Download Error:', data)
     })
 
     processHandle.on('close', (code) => {
@@ -221,8 +226,48 @@ ipcMain.handle('getYoutubeCookies', async () => {
 // Get formats from JSON file
 // -------------------------------------
 const formatsFile = join(__dirname, '../../public/formats.json')
-const availableFormats = JSON.parse(readFileSync(formatsFile, 'utf8'))
+// const availableFormats = JSON.parse(readFileSync(formatsFile, 'utf8'))
 
-ipcMain.handle('getFormats', async () => {
-  return availableFormats
-})
+// ipcMain.handle('getFormats', async () => {
+//   return availableFormats
+// })
+ipcMain.handle('getFormats', async (event, url) => {
+  console.log("url",url);
+  
+  return new Promise((resolve, reject) => {
+    const command = `"${ytdlpPath}" -F "${url}"`;
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Error fetching formats:', stderr);
+        reject("Failed to fetch formats");
+      } else {
+        const formats = parseFormats(stdout);
+       // Debugging
+        resolve(formats);
+      }
+    });
+  });
+});
+
+// Function to only return 720p, 1080p, and two audio formats
+function parseFormats(output) {
+  const lines = output.split('\n');
+  const formatList = [];
+
+  lines.forEach((line) => {
+    const match = line.match(/^(\d+)\s+(\w+)\s+(\d+x\d+|\d+kbps|audio only)/);
+    if (match) {
+      const formatId = match[1];  // e.g., "137"
+      const formatType = match[2]; // e.g., "mp4", "m4a"
+      const quality = match[3];   // e.g., "1280x720", "128kbps"
+
+      // ✅ Only include MP4 (720p, 1080p) & Audio (128kbps, 256kbps)
+      
+        formatList.push({ formatId, formatType, quality });
+      
+    }
+  });
+
+  return formatList;
+}

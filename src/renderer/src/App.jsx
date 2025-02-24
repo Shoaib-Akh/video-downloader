@@ -24,21 +24,30 @@ function App() {
   const [isDownloading, setIsDownloading] = useState(false)
   const [permissionStatus, setPermissionStatus] = useState('unknown')
   const [downloadedFile, setDownloadedFile] = useState('')
-  const [formats, setFormats] = useState([])
+
   const [fileSize, setFileSize] = useState('')
   const [speed, setSpeed] = useState('')
   const [eta, setEta] = useState('')
-  useEffect(() => {
-    const fetchFormats = async () => {
-      try {
-        const availableFormats = await window.api.getFormats()
-        setFormats(availableFormats)
-      } catch (error) {
-        console.error('Error loading formats:', error)
-      }
-    }
-    fetchFormats()
-  }, [])
+  const [selectedVideoFormat, setSelectedVideoFormat] = useState('');
+  const [selectedAudioFormat, setSelectedAudioFormat] = useState('');
+  const [formats, setFormats] = useState([]);
+console.log(selectedVideoFormat);
+console.log(selectedAudioFormat);
+
+
+  // useEffect(() => {
+  //   const fetchFormats = async () => {
+  //     try {
+  //       const availableFormats = await window.api.getFormats()
+  //       console.log("availableFormats",availableFormats);
+        
+  //       setFormats(availableFormats)
+  //     } catch (error) {
+  //       console.error('Error loading formats:', error)
+  //     }
+  //   }
+  //   fetchFormats()
+  // }, [])
   const fetchYoutubeCookies = async () => {
     if (!window.api?.getYoutubeCookies) {
       console.error('window.api.getYoutubeCookies is not defined.')
@@ -91,33 +100,32 @@ function App() {
     }
   }, [])
 
-  const handleDownload = async (formatId) => {
-    if (!videoUrl.trim() || !formatId) {
-      alert('Please enter a valid YouTube URL and select a format')
-      return
+  const handleDownload = async () => {
+    if (!videoUrl.trim() || !selectedVideoFormat || !selectedAudioFormat) {
+      alert('Please enter a valid YouTube URL and select both video and audio formats.');
+      return;
     }
     try {
-      setDownloadStatus('Downloading...')
-      setIsDownloading(true)
-      setDownloadProgress(0)
-      setFileSize('')
-      setSpeed('')
-      setEta('')
-      setDownloadedFile('')
+      setDownloadStatus('Downloading...');
+      setIsDownloading(true);
+      setDownloadProgress(0);
+      setFileSize('');
+      setSpeed('');
+      setEta('');
 
       if (window.api?.downloadVideo) {
-        await window.api.downloadVideo(videoUrl, formatId)
-        setDownloadStatus('Download Complete ✅')
+        await window.api.downloadVideo(videoUrl, selectedVideoFormat,selectedAudioFormat);
+        setDownloadStatus('Download Complete ✅');
       } else {
-        throw new Error('API not available')
+        throw new Error('API not available');
       }
     } catch (error) {
-      setDownloadStatus(`Error: ${error.message}`)
-      setDownloadProgress(0)
+      setDownloadStatus(`Error: ${error.message}`);
+      setDownloadProgress(0);
     } finally {
-      setTimeout(() => setIsDownloading(false), 3000)
+      setTimeout(() => setIsDownloading(false), 3000);
     }
-  }
+  };
 
   const handleSocialIconClick = (url) => {
     fetchCookies()
@@ -129,7 +137,46 @@ function App() {
       console.error('window.api.openWebview is not defined')
     }
   }
+  const fetchFormats = async () => {
+    if (!videoUrl.trim()) {
+      alert('Please enter a valid YouTube URL');
+      return;
+    }
 
+    try {
+    
+      const availableFormats = await window.api.getFormats(videoUrl);
+      
+      // ✅ Filter only required formats (720p, 1080p MP4 & Audio)
+     
+
+      setFormats(availableFormats);
+     
+    } catch (error) {
+      console.error('Error fetching formats:', error);
+      setDownloadStatus('Failed to fetch formats');
+    }
+  };
+  useEffect(()=>{
+    if (videoUrl) {
+      
+      fetchFormats()
+    }},[videoUrl])
+    const getAudioFormats = (formats) => {
+      return formats.filter((f) => f.quality === 'audio only');
+    };
+    
+    // 🎬 Filter Function for Video Formats
+    const getVideoFormats = (formats) => {
+      return formats.filter((f) => f.quality !== 'audio only');
+    };
+    
+    // 🛠️ Now you can call:
+    const audioFormats = getAudioFormats(formats);
+    const videoFormats = getVideoFormats(formats);
+   
+
+    
   return (
     <div className="app-container">
       <h2>🎬 YouTube Video Downloader</h2>
@@ -143,18 +190,37 @@ function App() {
         />
       </div>
 
-      {formats.length > 0 && (
-        <div className="formats-container">
-          <h3>Select a Format:</h3>
-          {formats.map((format) => (
-            <button
-              key={format.formatId}
-              className="format-btn"
-              onClick={() => handleDownload(format.formatId)}
-            >
-              {format.label}
-            </button>
-          ))}
+      {audioFormats?.length  && videoFormats?.length > 0 && (
+        <div className="dropdown-container">
+          <div>
+            <h3>Select Video Format:</h3>
+            <select onChange={(e) => setSelectedVideoFormat(e.target.value)}>
+              <option value="">Select Video Format</option>
+              {videoFormats.map((format) => (
+                <option key={format.formatId} value={format.formatId}>
+                  {format.formatType
+                  }
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <h3>Select Audio Format:</h3>
+            <select onChange={(e) => setSelectedAudioFormat(e.target.value)}>
+              <option value="">Select Audio Format</option>
+              {audioFormats?.map((format) => (
+                <option key={format.formatId} value={format.formatId}>
+                  {format.formatType
+                  }
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button className="download-btn" onClick={handleDownload} disabled={!selectedVideoFormat || !selectedAudioFormat}>
+            <FaDownload /> Download
+          </button>
         </div>
       )}
 
