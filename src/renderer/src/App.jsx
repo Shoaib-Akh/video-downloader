@@ -31,8 +31,10 @@ function App() {
   const [selectedVideoFormat, setSelectedVideoFormat] = useState('');
   const [selectedAudioFormat, setSelectedAudioFormat] = useState('');
   const [formats, setFormats] = useState([]);
-console.log(selectedVideoFormat);
-console.log(selectedAudioFormat);
+console.log("selectedVideoFormat",selectedVideoFormat);
+console.log("selectedAudioFormat",selectedAudioFormat);
+
+
 
 
   // useEffect(() => {
@@ -195,27 +197,19 @@ console.log(selectedAudioFormat);
           <div>
             <h3>Select Video Format:</h3>
             <select onChange={(e) => setSelectedVideoFormat(e.target.value)}>
-              <option value="">Select Video Format</option>
-              {videoFormats.map((format) => (
-                <option key={format.formatId} value={format.formatId}>
-                  {format.formatType
-                  }
-                </option>
-              ))}
-            </select>
-          </div>
+            <option value="">Select Video Format</option>
+            {getVideoFormats(formats).map((format) => (
+              <option key={format.formatId} value={format.formatId}>{format.quality} - {format.formatType}</option>
+            ))}
+          </select>
 
-          <div>
-            <h3>Select Audio Format:</h3>
-            <select onChange={(e) => setSelectedAudioFormat(e.target.value)}>
-              <option value="">Select Audio Format</option>
-              {audioFormats?.map((format) => (
-                <option key={format.formatId} value={format.formatId}>
-                  {format.formatType
-                  }
-                </option>
-              ))}
-            </select>
+          <h3>Select Audio Format:</h3>
+          <select onChange={(e) => setSelectedAudioFormat(e.target.value)}>
+            <option value="">Select Audio Format</option>
+            {getAudioFormats(formats).map((format) => (
+              <option key={format.formatId} value={format.formatId}>{format.formatType}</option>
+            ))}
+          </select>
           </div>
 
           <button className="download-btn" onClick={handleDownload} disabled={!selectedVideoFormat || !selectedAudioFormat}>

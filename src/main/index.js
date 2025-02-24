@@ -1,11 +1,14 @@
 // main.js
 import { app, shell, BrowserWindow, ipcMain, session } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, optimizer, is, } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { writeFileSync, readFileSync } from 'fs'
-const { exec } = require('child_process')
+import { writeFileSync, readFileSync,unlinkSync } from 'fs'
 
+import ffmpeg from '@ffmpeg-installer/ffmpeg';
+import ffmpegFluent from 'fluent-ffmpeg';
+const { exec } = require('child_process')
+ffmpegFluent.setFfmpegPath(ffmpeg.path);
 // Path to your cookies.txt
 const cookiesPath = app.isPackaged
   ? join(process.resourcesPath, 'cookies.txt')
@@ -171,48 +174,71 @@ ipcMain.on('open-webview', (event, url) => {
 // Download video with yt-dlp
 // -------------------------------------
 ipcMain.handle('downloadVideo', async (event, url, videoFormat, audioFormat) => {
+  console.log("Selected Video Format:", videoFormat);
+  console.log("Selected Audio Format:", audioFormat);
+
   return new Promise((resolve, reject) => {
-    const downloadDir = app.getPath('downloads')
-    const downloadPath = join(downloadDir, '%(title)s.%(ext)s')
-console.log(videoFormat);
-console.log(audioFormat);
+    const downloadDir = app.getPath('downloads');
 
+    // Step 1: Retrieve original filename
+    const getFilenameCommand = `"${ytdlpPath}" --get-filename -o "%(title)s" "${url}"`;
 
-    // Construct the yt-dlp command for downloading video + audio
-    let command = `"${ytdlpPath}" -o "${downloadPath}" --cookies -f "bestaudio[ext=m4a]+bestvideo[ext=mp4]" --merge-output-format mp4 "${url}"`
-    console.log('command', command)
-
-    const processHandle = exec(command)
-
-    processHandle.stdout.on('data', (data) => {
-      console.log('Download Progress:', data)
-
-      const progressMatch = data.match(
-        /(\d+\.?\d*)%\s+of\s+([\d.]+[KMG]iB)\s+at\s+([\d.]+[KMG]?iB\/s)\s+ETA\s+([\d:]+)/
-      )
-      if (progressMatch) {
-        const progress = parseFloat(progressMatch[1])
-        const fileSize = progressMatch[2]
-        const speed = progressMatch[3]
-        const eta = progressMatch[4]
-
-        event.sender.send('download-progress', { progress, fileSize, speed, eta })
+    exec(getFilenameCommand, (error, stdout) => {
+      if (error) {
+        console.error('Error getting filename:', error);
+        return reject("Failed to retrieve filename");
       }
-    })
 
-    processHandle.stderr.on('data', (data) => {
-      console.log('Download Error:', data)
-    })
+      const filename = stdout.trim(); // Extract filename without extension
+      const videoPath = join(downloadDir, `${filename}_video.mp4`);
+      const audioPath = join(downloadDir, `${filename}_audio.m4a`);
+      const outputPath = join(downloadDir, `${filename}.mp4`);
 
-    processHandle.on('close', (code) => {
-      if (code === 0) {
-        resolve('Download completed')
-      } else {
-        reject('Download failed')
-      }
-    })
-  })
-})
+      // Step 2: Download video and audio separately
+      const videoCommand = `"${ytdlpPath}" -f ${videoFormat} -o "${videoPath}" "${url}"`;
+      const audioCommand = `"${ytdlpPath}" -f ${audioFormat} -o "${audioPath}" "${url}"`;
+
+      exec(videoCommand, (videoError) => {
+        if (videoError) return reject('Failed to download video');
+
+        exec(audioCommand, (audioError) => {
+          if (audioError) return reject('Failed to download audio');
+
+          // Step 3: Merge video and audio
+          mergeVideoAudio(videoPath, audioPath, outputPath)
+            .then(() => {
+              // Step 4: Delete temporary files after merging
+              try {
+                unlinkSync(videoPath);
+                unlinkSync(audioPath);
+              } catch (err) {
+                console.error("Error deleting temporary files:", err);
+              }
+              resolve(outputPath);
+            })
+            .catch((err) => reject(err));
+        });
+      });
+    });
+  });
+});
+
+// 🎥 Merge Video & Audio using FFmpeg
+function mergeVideoAudio(videoPath, audioPath, outputPath) {
+  console.log("Merging:", videoPath, " + ", audioPath);
+
+  return new Promise((resolve, reject) => {
+    ffmpegFluent()
+      .input(videoPath)
+      .input(audioPath)
+      .outputOptions('-c:v copy')
+      .outputOptions('-c:a aac')
+      .outputOptions('-strict experimental') // Ensures compatibility
+      .save(outputPath)
+      .on('end', () => resolve(outputPath))
+      .on('error', (err) => reject(`Merge error: ${err.message}`));
+  });
+}
 
 // -------------------------------------
 // Force update & retrieve path of cookies
@@ -252,22 +278,8 @@ ipcMain.handle('getFormats', async (event, url) => {
 
 // Function to only return 720p, 1080p, and two audio formats
 function parseFormats(output) {
-  const lines = output.split('\n');
-  const formatList = [];
-
-  lines.forEach((line) => {
+  return output.split('\n').map((line) => {
     const match = line.match(/^(\d+)\s+(\w+)\s+(\d+x\d+|\d+kbps|audio only)/);
-    if (match) {
-      const formatId = match[1];  // e.g., "137"
-      const formatType = match[2]; // e.g., "mp4", "m4a"
-      const quality = match[3];   // e.g., "1280x720", "128kbps"
-
-      // ✅ Only include MP4 (720p, 1080p) & Audio (128kbps, 256kbps)
-      
-        formatList.push({ formatId, formatType, quality });
-      
-    }
-  });
-
-  return formatList;
+    return match ? { formatId: match[1], formatType: match[2], quality: match[3] } : null;
+  }).filter(Boolean);
 }
