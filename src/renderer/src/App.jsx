@@ -4,17 +4,11 @@ import './App.css'
 
 const socialLinks = [
   { name: 'YouTube', url: 'https://www.youtube.com', icon: <FaYoutube className="youtube-icon" /> }
-  // {
-  //   name: 'Instagram',
-  //   url: 'https://www.instagram.com',
-  //   icon: <FaInstagram className="instagram-icon" />
-  // },
-  // {
-  //   name: 'Facebook',
-  //   url: 'https://www.facebook.com',
-  //   icon: <FaFacebook className="facebook-icon" />
-  // }
 ]
+
+// Predefined options for resolution & audio format
+const qualityOptions = ["360", "480", "720", "1080", "1440", "2160"]
+const audioFormatsd = ["mp3", "aac", "wav", "flac"]
 
 function App() {
   const [currentUrl, setCurrentUrl] = useState('')
@@ -24,44 +18,37 @@ function App() {
   const [isDownloading, setIsDownloading] = useState(false)
   const [permissionStatus, setPermissionStatus] = useState('unknown')
   const [downloadedFile, setDownloadedFile] = useState('')
-
   const [fileSize, setFileSize] = useState('')
   const [speed, setSpeed] = useState('')
   const [eta, setEta] = useState('')
-  const [selectedVideoFormat, setSelectedVideoFormat] = useState('');
-  const [selectedAudioFormat, setSelectedAudioFormat] = useState('');
-  const [formats, setFormats] = useState([]);
-console.log("selectedVideoFormat",selectedVideoFormat);
-console.log("selectedAudioFormat",selectedAudioFormat);
 
+  // Default selected resolution & audio format
+  const [selectedQuality, setSelectedQuality] = useState("720")
+  const [selectedAudioFormat, setSelectedAudioFormat] = useState("mp3")
 
-
-
-  // useEffect(() => {
-  //   const fetchFormats = async () => {
-  //     try {
-  //       const availableFormats = await window.api.getFormats()
-  //       console.log("availableFormats",availableFormats);
-        
-  //       setFormats(availableFormats)
-  //     } catch (error) {
-  //       console.error('Error loading formats:', error)
-  //     }
-  //   }
-  //   fetchFormats()
-  // }, [])
-  const fetchYoutubeCookies = async () => {
-    if (!window.api?.getYoutubeCookies) {
-      console.error('window.api.getYoutubeCookies is not defined.')
-      return
+  useEffect(() => {
+    if (window.api?.receive) {
+      window.api.receive('download-progress', (data) => {
+        // data = { progress, fileSize, speed, eta, status, file }
+        setDownloadProgress(data.progress || 0)
+        setFileSize(data.fileSize || '')
+        setSpeed(data.speed || '')
+        setEta(data.eta || '')
+        setDownloadedFile(data.file || '')
+        setDownloadStatus(data.status || '')
+      })
     }
+  }, [])
 
+  const fetchYoutubeCookies = async () => {
+    if (!window.api?.getYoutubeCookies) return
     try {
-      window.api.getYoutubeCookies()
+      await window.api.getYoutubeCookies()
     } catch (error) {
       console.error('Error fetching YouTube cookies:', error)
     }
   }
+
   const fetchCookies = async () => {
     if (permissionStatus === 'unknown') {
       const userConsent = window.confirm('Do you allow this app to access cookies?')
@@ -72,113 +59,50 @@ console.log("selectedAudioFormat",selectedAudioFormat);
       }
       setPermissionStatus('granted')
     }
-
     if (permissionStatus === 'granted') {
-      try {
-        fetchYoutubeCookies()
-      
-      } catch (error) {
-        console.error('Error fetching cookies:', error)
-        setPermissionStatus('denied')
-      }
+      fetchYoutubeCookies()
     }
   }
-  useEffect(() => {
-    if (currentUrl) {
-      fetchCookies()
-    }
-  }, [currentUrl])
-
-  useEffect(() => {
-    if (window.api?.receive) {
-      window.api.receive('download-progress', ({ progress, fileSize, speed, eta }) => {
-        setDownloadProgress(progress)
-        setFileSize(fileSize)
-        setSpeed(speed)
-        setEta(eta)
-      })
-    } else {
-      console.error('window.api.receive is not defined.')
-    }
-  }, [])
-
-  const handleDownload = async () => {
-    if (!videoUrl.trim() || !selectedVideoFormat || !selectedAudioFormat) {
-      alert('Please enter a valid YouTube URL and select both video and audio formats.');
-      return;
-    }
-    try {
-      setDownloadStatus('Downloading...');
-      setIsDownloading(true);
-      setDownloadProgress(0);
-      setFileSize('');
-      setSpeed('');
-      setEta('');
-
-      if (window.api?.downloadVideo) {
-        await window.api.downloadVideo(videoUrl, selectedVideoFormat,selectedAudioFormat);
-        setDownloadStatus('Download Complete ✅');
-      } else {
-        throw new Error('API not available');
-      }
-    } catch (error) {
-      setDownloadStatus(`Error: ${error.message}`);
-      setDownloadProgress(0);
-    } finally {
-      setTimeout(() => setIsDownloading(false), 3000);
-    }
-  };
 
   const handleSocialIconClick = (url) => {
     fetchCookies()
-
     if (window.api?.openWebview) {
       setCurrentUrl(url)
       window.api.openWebview(url)
-    } else {
-      console.error('window.api.openWebview is not defined')
     }
   }
-  const fetchFormats = async () => {
+
+  const handleDownload = async () => {
     if (!videoUrl.trim()) {
-      alert('Please enter a valid YouTube URL');
-      return;
+      alert('Please enter a valid YouTube URL.')
+      return
     }
-
     try {
-    
-      const availableFormats = await window.api.getFormats(videoUrl);
-      
-      // ✅ Filter only required formats (720p, 1080p MP4 & Audio)
-     
+      setDownloadStatus('Starting download...')
+      setIsDownloading(true)
+      setDownloadProgress(0)
+      setFileSize('')
+      setSpeed('')
+      setEta('')
+      setDownloadedFile('')
 
-      setFormats(availableFormats);
-     
+      if (window.api?.downloadVideo) {
+        await window.api.downloadVideo(videoUrl, {
+          resolution: selectedQuality,
+          audioFormat: selectedAudioFormat
+        })
+        setDownloadStatus('Download Complete ✅')
+      } else {
+        throw new Error('Main API not available')
+      }
     } catch (error) {
-      console.error('Error fetching formats:', error);
-      setDownloadStatus('Failed to fetch formats');
+      setDownloadStatus(`Error: ${error.message}`)
+      setDownloadProgress(0)
+    } finally {
+      setTimeout(() => setIsDownloading(false), 5000)
     }
-  };
-  useEffect(()=>{
-    if (videoUrl) {
-      
-      fetchFormats()
-    }},[videoUrl])
-    const getAudioFormats = (formats) => {
-      return formats.filter((f) => f.quality === 'audio only');
-    };
-    
-    // 🎬 Filter Function for Video Formats
-    const getVideoFormats = (formats) => {
-      return formats.filter((f) => f.quality !== 'audio only');
-    };
-    
-    // 🛠️ Now you can call:
-    const audioFormats = getAudioFormats(formats);
-    const videoFormats = getVideoFormats(formats);
-   
+  }
 
-    
   return (
     <div className="app-container">
       <h2>🎬 YouTube Video Downloader</h2>
@@ -192,57 +116,65 @@ console.log("selectedAudioFormat",selectedAudioFormat);
         />
       </div>
 
-      {audioFormats?.length  && videoFormats?.length > 0 && (
-        <div className="dropdown-container">
-          <div>
-            <h3>Select Video Format:</h3>
-            <select onChange={(e) => setSelectedVideoFormat(e.target.value)}>
-            <option value="">Select Video Format</option>
-            {getVideoFormats(formats).map((format) => (
-              <option key={format.formatId} value={format.formatId}>{format.quality} - {format.formatType}</option>
-            ))}
-          </select>
+      <div className="dropdown-container">
+        <h3>Video Resolution:</h3>
+        <select
+          value={selectedQuality}
+          onChange={(e) => setSelectedQuality(e.target.value)}
+        >
+          {qualityOptions.map((quality) => (
+            <option key={quality} value={quality}>
+              {quality}p
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <h3>Select Audio Format:</h3>
-          <select onChange={(e) => setSelectedAudioFormat(e.target.value)}>
-            <option value="">Select Audio Format</option>
-            {getAudioFormats(formats).map((format) => (
-              <option key={format.formatId} value={format.formatId}>{format.formatType}</option>
-            ))}
-          </select>
-          </div>
+      <div className="dropdown-container">
+        <h3>Audio Format:</h3>
+        <select
+          value={selectedAudioFormat}
+          onChange={(e) => setSelectedAudioFormat(e.target.value)}
+        >
+          {audioFormatsd.map((af) => (
+            <option key={af} value={af}>
+              {af.toUpperCase()}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <button className="download-btn" onClick={handleDownload} disabled={!selectedVideoFormat || !selectedAudioFormat}>
-            <FaDownload /> Download
-          </button>
-        </div>
-      )}
+      <button
+        className="download-btn"
+        onClick={handleDownload}
+        disabled={!videoUrl.trim()}
+      >
+        <FaDownload /> Download
+      </button>
 
       {isDownloading && (
         <div className="progress-container">
           <h3>Download Progress:</h3>
-          <p>
-            <strong>File:</strong> {downloadedFile || 'Fetching filename...'}
-          </p>
-          <p>
-            <strong>Size:</strong> {fileSize || 'Calculating...'}
-          </p>
-          <p>
-            <strong>Speed:</strong> {speed || 'Waiting...'}
-          </p>
-          <p>
-            <strong>ETA:</strong> {eta || '...'}
-          </p>
-
+          <p><strong>File:</strong> {downloadedFile || 'Fetching filename...'}</p>
+          <p><strong>Size:</strong> {fileSize || 'Calculating...'}</p>
+          <p><strong>Speed:</strong> {speed || 'Waiting...'}</p>
+          <p><strong>ETA:</strong> {eta || '...'}</p>
           <div className="progress-bar">
-            <div className="progress" style={{ width: `${downloadProgress}%` }}></div>
+            <div
+              className="progress"
+              style={{ width: `${downloadProgress}%` }}
+            ></div>
           </div>
-          <p>{downloadProgress}%</p>
+          <p>{downloadProgress.toFixed(2)}%</p>
         </div>
       )}
 
       {downloadStatus && (
-        <div className={`status-bar ${downloadProgress === 100 ? 'success' : 'error'}`}>
+        <div
+          className={`status-bar ${
+            downloadProgress === 100 ? 'success' : 'error'
+          }`}
+        >
           <FaDownload className="status-icon" />
           <span>{downloadStatus}</span>
           {downloadProgress === 100 ? (
@@ -252,6 +184,7 @@ console.log("selectedAudioFormat",selectedAudioFormat);
           )}
         </div>
       )}
+
       <div className="social-icons">
         {socialLinks.map((social) => (
           <div

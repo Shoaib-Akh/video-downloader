@@ -1,310 +1,195 @@
-/* Global Styles */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    color: "red";
-  }
-  
-  /* App Container */
-  .app-container {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 100%;
-  }
-  
-  /* Input Container */
-  .input-container {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-  
-  input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  /* Buttons */
-  button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .download-btn {
-    background: #007bff;
-    color: white;
-  }
-  
-  .download-btn:hover {
-    background: #0056b3;
-  }
-  
-  .fetch-btn {
-    background: #28a745;
-    color: white;
-  }
-  
-  .fetch-btn:hover {
-    background: #218838;
-  }
-  
-  /* Logo */
-  .logo {
-    cursor: pointer;
-    margin-top: 20px;
-    width: 80px;
-  }
-  
-  /* Social Icons */
-  .social-icons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
-  }
-  
-  .social-icon {
-    font-size: 60px;
-    cursor: pointer;
-  }
-  
-  .youtube-icon {
-    color: red;
-  }
-  
-  .instagram-icon {
-    color: purple;
-  }
-  
-  .facebook-icon {
-    color: blue;
-  }
-  
-  /* Webview */
-  .webview-container {
-    margin-top: 20px;
-    width: 100%;
-    height: 500px;
-    border: 1px solid #ccc;
-  }
-  
-  /* Cookies Container */
-  .cookies-container {
-    margin-top: 20px;
-    text-align: left;
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 5px;
-    color: #333;
-  }
-  .cookies-container h3 {
-    color: red;
-  }
-  
-  /* Status Bar */
- 
-  
- 
-  
-  
-  
-  .status-error {
-    color: #dc3545;
-  }
-  .progress-container {
-    text-align: center;
-    margin-top: 20px;
-  }
-  .progress-container p {
-    text-align: center;
-    margin-top: 20px;
-    color: #000;
-  }
-  
-  
-  .progress-bar {
-    width: 100%;
-    height: 10px;
-    background: red;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-top: 10px;
-  }
-  
-  .progress {
-    height: 100%;
-    background: #4caf50;
-    transition: width 0.3s ease-in-out;
-  }
-  
-  .status-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 20px;
-  }
-  
-  .status-icon {
-    margin-right: 10px;
-    font-size: 20px;
-  }
-  
-  .status-success {
-    color: green;
-  }
+/* App.css */
 
-  .formats-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
-  }
-  
-  .format-btn {
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    background-color: #007bff;
-    color: white;
-    border-radius: 5px;
-  }
-  
-  .format-btn:hover {
-    background-color: #0056b3;
-  }
+/* -------- Global Resets & Body Styling -------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  /* 🎨 General Styles */
 body {
-  background-color: #f4f4f4;
-  font-family: 'Arial', sans-serif;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #e1f2ff, #fef2f0);
+  /* ^ pick any nice gradient or solid background you like */
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* -------- Main Container -------- */
+.app-container {
+  background: #fff;
+  max-width: 600px;
+  width: 90%;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
   text-align: center;
 }
 
-
-
-/* 🎬 Title */
-h2 {
+/* -------- Titles & Headings -------- */
+.app-container h2 {
+  margin-bottom: 1rem;
   color: #333;
-  font-size: 24px;
+  font-weight: 600;
 }
 
-/* 🎯 Input Field */
+/* -------- Input Container -------- */
 .input-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
-input {
-  width: 80%;
-  padding: 10px;
-  font-size: 16px;
+.input-container input {
+  width: 100%;
   border: 1px solid #ddd;
   border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
 }
 
-/* 🎵 Format Buttons */
-.formats-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 20px;
+.input-container input:focus {
+  border-color: #a5a5a5;
 }
 
-.format-btn {
-  background: #007bff;
-  color: white;
-  padding: 8px 15px;
-  margin: 5px;
-  border: none;
-  border-radius: 5px;
+/* -------- Dropdowns -------- */
+.dropdown-container {
+  margin-bottom: 1rem;
+  text-align: left; /* or center, depending on your preference */
+}
+
+.dropdown-container h3 {
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.dropdown-container select {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  background: #fff;
+  outline: none;
   cursor: pointer;
-  font-size: 14px;
-  transition: background 0.3s ease-in-out;
+  transition: border-color 0.3s ease;
 }
 
-.format-btn:hover {
-  background: #0056b3;
+.dropdown-container select:focus {
+  border-color: #a5a5a5;
 }
 
-/* ⏳ Progress Bar */
+/* -------- Download Button -------- */
+.download-btn {
+  background-color: #e33e5a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.download-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.download-btn:hover:not(:disabled) {
+  background-color: #c92e48;
+  transform: translateY(-1px);
+}
+
+/* -------- Progress Container -------- */
 .progress-container {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 10px;
-  margin-top: 20px;
+  text-align: left;
+  background-color: #fcfcfc;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
 }
 
+.progress-container h3 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.progress-container p {
+  margin: 0.25rem 0;
+  color: #444;
+}
+
+/* Progress bar */
 .progress-bar {
   width: 100%;
-  height: 10px;
-  background: #ddd;
+  background-color: #eee;
   border-radius: 5px;
-  overflow: hidden;
-  margin: 10px 0;
+  height: 10px;
+  margin: 0.5rem 0;
+  position: relative;
 }
 
 .progress {
   height: 100%;
-  background: #28a745;
-  transition: width 0.3s ease-in-out;
+  border-radius: 5px;
+  background-color: #e33e5a;
+  transition: width 0.4s ease;
 }
 
-/* ✅ Success / ❌ Error */
+/* -------- Status Bar -------- */
 .status-bar {
-  margin-top: 20px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 10px;
-  border-radius: 5px;
-  font-size: 16px;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 500;
 }
 
 .status-bar.success {
-  color: #28a745;
-  font-weight: bold;
+  background-color: #28a745;
 }
 
 .status-bar.error {
-  color: red;
-  font-weight: bold;
+  background-color: #dc3545;
 }
 
-/* 🎵 Icons */
 .status-icon {
-  margin-right: 10px;
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
-.status-success {
-  color: green;
-  margin-left: 5px;
-}
-
-.status-error {
-  color: red;
-  margin-left: 5px;
-}
-.dropdown-container{
+/* -------- Social Icons -------- */
+.social-icons {
+  margin-top: 1rem;
   display: flex;
-  flex-direction: row;
+  justify-content: center;
 }
-.dropdown-container h3{
- color: #000;
+
+.social-icon {
+  cursor: pointer;
+  margin: 0 0.5rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.youtube-icon {
+  color: #ff0000;
+  font-size: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.youtube-icon:hover {
+  transform: scale(1.1);
 }
